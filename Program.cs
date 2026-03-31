@@ -4,6 +4,8 @@ using MovieWatchlistAPI.Services;
 using Scalar.AspNetCore;
 using OpenAI;
 using MovieWatchlistAPI.Services.Interfaces;
+using MovieWatchlistAPI.Validators;
+using FluentValidation;
 
 namespace MovieWatchlistAPI
 {
@@ -41,6 +43,9 @@ namespace MovieWatchlistAPI
             builder.Services.AddScoped<IMovieService, MovieService>();
             // Register the IAiService interface with its implementation OpenAiService
             builder.Services.AddScoped<IAiService, OpenAiService>();
+
+            // FluentValidation 
+            builder.Services.AddValidatorsFromAssemblyContaining<AddMovieRequestValidator>();
 
             var app = builder.Build();
 
