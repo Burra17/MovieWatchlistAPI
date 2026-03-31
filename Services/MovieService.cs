@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MovieWatchlistAPI.Database;
 using MovieWatchlistAPI.Dtos;
-using MovieWatchlistAPI.Interfaces;
+using MovieWatchlistAPI.Services.Interfaces;
 using MovieWatchlistAPI.Models;
 
 namespace MovieWatchlistAPI.Services
@@ -12,14 +12,20 @@ namespace MovieWatchlistAPI.Services
         private readonly AppDbContext _appDbContext;
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
+        private readonly IAiService _aiService;
 
 
         // Constructor and dependencies
-        public MovieService(AppDbContext appDbContext, HttpClient httpClient, IConfiguration configuration)
+        public MovieService(
+            AppDbContext appDbContext, 
+            HttpClient httpClient, 
+            IConfiguration configuration,
+            IAiService aiService)
         {
             _appDbContext = appDbContext;
             _httpClient = httpClient;
             _configuration = configuration;
+            _aiService = aiService;
         }
 
         public async Task<WatchlistResponseDto> AddMovieToWatchlistAsync(AddMovieRequestDto request)
@@ -51,14 +57,20 @@ namespace MovieWatchlistAPI.Services
                 throw new Exception("Movie not found in OMDb.");
             }
 
+            // Generate AI pitch using the IAiService
+            var aiPitch = await _aiService.GenerateMoviePitchAsync(
+                             omdbResponse.Title,
+                             omdbResponse.Plot ?? "No plot available"
+                          );
+
             // 3. Create the Database Entity
             // Note: We convert Year from string to int here
             var movieEntity = new WatchlistMovie
             {
                 ImdbId = omdbResponse.imdbID,
                 Title = omdbResponse.Title,
-                Year = int.Parse(omdbResponse.Year),
-                AiPitch = "AI Pitch is being generated...", // We will fix this with OpenAI later!
+                Year = int.TryParse(omdbResponse.Year.Substring(0, 4), out int year) ? year : 0,
+                AiPitch = aiPitch,
                 IsWatched = false
             };
 

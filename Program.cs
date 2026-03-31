@@ -1,8 +1,9 @@
 using MovieWatchlistAPI.Database;
 using Microsoft.EntityFrameworkCore;
 using MovieWatchlistAPI.Services;
-using MovieWatchlistAPI.Interfaces;
 using Scalar.AspNetCore;
+using OpenAI;
+using MovieWatchlistAPI.Services.Interfaces;
 
 namespace MovieWatchlistAPI
 {
@@ -25,7 +26,21 @@ namespace MovieWatchlistAPI
             // Add the MovieService to the dependency injection container
             builder.Services.AddHttpClient();
 
+            // Add OpenAI client to the dependency injection container
+            builder.Services.AddSingleton<OpenAIClient>(sp =>
+            {
+                var apiKey = builder
+                    .Configuration
+                    .GetValue<string>("OpenAI:ApiKey") 
+                    ?? throw new InvalidOperationException("OpenAI API key is not configured.");
+
+                return new OpenAIClient(apiKey);
+            });
+
+            // Register the IMovieService interface with its implementation MovieService
             builder.Services.AddScoped<IMovieService, MovieService>();
+            // Register the IAiService interface with its implementation OpenAiService
+            builder.Services.AddScoped<IAiService, OpenAiService>();
 
             var app = builder.Build();
 
