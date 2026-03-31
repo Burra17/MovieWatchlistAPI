@@ -1,0 +1,160 @@
+{
+  "info": {
+    "_postman_id": "51006a80-0627-40c2-acf9-cb3851371fc1",
+    "name": "MovieWatchlist API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "53031698",
+    "_collection_link": "https://go.postman.co/collection/53031698-51006a80-0627-40c2-acf9-cb3851371fc1?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "WatchlistMovie",
+      "item": [
+        {
+          "name": "Search Movie (OMDb) based on title",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://localhost:7095/api/Movies/search/:title",
+              "protocol": "https",
+              "host": [
+                "localhost"
+              ],
+              "port": "7095",
+              "path": [
+                "api",
+                "Movies",
+                "search",
+                ":title"
+              ],
+              "variable": [
+                {
+                  "key": "title",
+                  "value": "Focus"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Watchlist from DB",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://localhost:7095/api/Movies",
+              "protocol": "https",
+              "host": [
+                "localhost"
+              ],
+              "port": "7095",
+              "path": [
+                "api",
+                "Movies"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Movie to Watchlist (with AI Pitch)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"imdbId\": \"123\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://localhost:7095/api/Movies",
+              "protocol": "https",
+              "host": [
+                "localhost"
+              ],
+              "port": "7095",
+              "path": [
+                "api",
+                "Movies"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Set IsWatched to true",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "https://localhost:7095/api/Movies/:id/watched",
+              "protocol": "https",
+              "host": [
+                "localhost"
+              ],
+              "port": "7095",
+              "path": [
+                "api",
+                "Movies",
+                ":id",
+                "watched"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "2"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete from watchlist",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "https://localhost:7095/api/Movies/:id",
+              "protocol": "https",
+              "host": [
+                "localhost"
+              ],
+              "port": "7095",
+              "path": [
+                "api",
+                "Movies",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "6"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

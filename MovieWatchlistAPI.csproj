@@ -8,6 +8,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Docs\MovieWatchlist API.postman_collection.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Docs\MovieWatchlist API.postman_collection.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.14" />
@@ -23,6 +33,12 @@
     </PackageReference>
     <PackageReference Include="OpenAI" Version="2.9.1" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.13.17" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Docs\DatabaseSetup.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
