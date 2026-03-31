@@ -4,6 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>af3ae04a-eba5-4da0-973c-7241d8af58d6</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,10 +19,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Controllers\" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.13.17" />
   </ItemGroup>
 
 </Project>
