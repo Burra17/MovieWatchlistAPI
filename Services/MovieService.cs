@@ -1,6 +1,8 @@
-﻿using MovieWatchlistAPI.Database;
+﻿using Microsoft.EntityFrameworkCore;
+using MovieWatchlistAPI.Database;
 using MovieWatchlistAPI.Dtos;
 using MovieWatchlistAPI.Interfaces;
+using MovieWatchlistAPI.Models;
 
 namespace MovieWatchlistAPI.Services
 {
@@ -20,14 +22,74 @@ namespace MovieWatchlistAPI.Services
             _configuration = configuration;
         }
 
-        public Task<WatchlistResponseDto> AddMovieToWatchlistAsync(AddMovieRequestDto request)
+        public async Task<WatchlistResponseDto> AddMovieToWatchlistAsync(AddMovieRequestDto request)
         {
-            throw new NotImplementedException();
+            // 1. Check if the movie already exists in our database to avoid duplicates
+            var existingMovie = await _appDbContext.WatchlistMovies
+                .FirstOrDefaultAsync(m => m.ImdbId == request.ImdbId);
+
+            if (existingMovie != null)
+            {
+                // If it exists, we just return the existing data mapped to our DTO
+                return new WatchlistResponseDto(
+                    existingMovie.ImdbId,
+                    existingMovie.Title,
+                    existingMovie.Year,
+                    existingMovie.AiPitch,
+                    existingMovie.IsWatched
+                );
+            }
+
+            // 2. Fetch full movie details from OMDb using the ImdbId
+            var apiKey = _configuration["OMDb:ApiKey"];
+            var url = $"https://www.omdbapi.com/?i={request.ImdbId}&apikey={apiKey}";
+
+            var omdbResponse = await _httpClient.GetFromJsonAsync<OmdbMovieDto>(url);
+
+            if (omdbResponse == null || string.IsNullOrEmpty(omdbResponse.Title))
+            {
+                throw new Exception("Movie not found in OMDb.");
+            }
+
+            // 3. Create the Database Entity
+            // Note: We convert Year from string to int here
+            var movieEntity = new WatchlistMovie
+            {
+                ImdbId = omdbResponse.imdbID,
+                Title = omdbResponse.Title,
+                Year = int.Parse(omdbResponse.Year),
+                AiPitch = "AI Pitch is being generated...", // We will fix this with OpenAI later!
+                IsWatched = false
+            };
+
+            // 4. Save to SQL Server
+            _appDbContext.WatchlistMovies.Add(movieEntity);
+            await _appDbContext.SaveChangesAsync();
+
+            // 5. Return the response DTO
+            return new WatchlistResponseDto(
+                movieEntity.ImdbId,
+                movieEntity.Title,
+                movieEntity.Year,
+                movieEntity.AiPitch,
+                movieEntity.IsWatched
+            );
         }
 
-        public Task<bool> DeleteMovieAsync(int id)
+        public async Task<bool> DeleteMovieAsync(int id)
         {
-            throw new NotImplementedException();
+            // 1. Find the movie by its primary key (Id)
+            var movie = await _appDbContext.WatchlistMovies.FindAsync(id);
+
+            // 2. If the movie doesn't exist, return false to indicate failure
+            if (movie == null) return false;
+
+            // 3. If it exists, remove it from the DbSet and save changes to the database
+            _appDbContext.WatchlistMovies.Remove(movie);
+            await _appDbContext.SaveChangesAsync();
+
+            // 4. Return true to indicate successful deletion
+            return true;
         }
 
         public async Task<OmdbMovieDto?> GetMovieByTitleAsync(string title)
@@ -62,14 +124,40 @@ namespace MovieWatchlistAPI.Services
             return null;
         }
 
-        public Task<IEnumerable<WatchlistResponseDto>> GetWatchlistAsync()
+        public async Task<IEnumerable<WatchlistResponseDto>> GetWatchlistAsync()
         {
-            throw new NotImplementedException();
+            var movies = await _appDbContext.WatchlistMovies.ToListAsync();
+
+            // Map each database entity to a Response DTO
+            return movies.Select(m => new WatchlistResponseDto(
+                m.ImdbId,
+                m.Title,
+                m.Year,
+                m.AiPitch,
+                m.IsWatched
+            ));
         }
 
-        public Task<WatchlistResponseDto?> MarkAsWatchedAsync(int id)
+        public async Task<WatchlistResponseDto?> MarkAsWatchedAsync(int id)
         {
-            throw new NotImplementedException();
+            // 1. Find the movie by its primary key (Id)
+            var movie = await _appDbContext.WatchlistMovies.FindAsync(id);
+
+            // 2. If the movie doesn't exist, return null to indicate failure
+            if (movie == null) return null;
+
+            // 3. If it exists, update the IsWatched property and save changes to the database
+            movie.IsWatched = true;
+            await _appDbContext.SaveChangesAsync();
+
+            // 4. Return the updated movie as a WatchlistResponseDto
+            return new WatchlistResponseDto(
+                movie.ImdbId,
+                movie.Title,
+                movie.Year,
+                movie.AiPitch,
+                movie.IsWatched
+            );
         }
     }
 }
