@@ -1,3 +1,5 @@
+using MovieWatchlistAPI.Database;
+using Microsoft.EntityFrameworkCore;
 
 namespace MovieWatchlistAPI
 {
@@ -12,6 +14,10 @@ namespace MovieWatchlistAPI
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
+
+            // Add DbContext with SQL Server provider
+            builder.Services.AddDbContext<AppDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             var app = builder.Build();
 
