@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MovieWatchlistAPI.Dtos;
-using MovieWatchlistAPI.Interfaces;
+using MovieWatchlistAPI.Services.Interfaces;
 
 namespace MovieWatchlistAPI.Controllers
 {

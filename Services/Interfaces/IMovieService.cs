@@ -1,6 +1,6 @@
 ﻿using MovieWatchlistAPI.Dtos;
 
-namespace MovieWatchlistAPI.Interfaces
+namespace MovieWatchlistAPI.Services.Interfaces
 {
     // Interface for movie-related operations, including fetching movie details from external APIs 
     // and managing the user's personal watchlist in the database.
