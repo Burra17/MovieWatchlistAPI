@@ -1,5 +1,8 @@
 using MovieWatchlistAPI.Database;
 using Microsoft.EntityFrameworkCore;
+using MovieWatchlistAPI.Services;
+using MovieWatchlistAPI.Interfaces;
+using Scalar.AspNetCore;
 
 namespace MovieWatchlistAPI
 {
@@ -19,12 +22,18 @@ namespace MovieWatchlistAPI
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+            // Add the MovieService to the dependency injection container
+            builder.Services.AddHttpClient();
+
+            builder.Services.AddScoped<IMovieService, MovieService>();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
+                app.MapScalarApiReference();
             }
 
             app.UseHttpsRedirection();
