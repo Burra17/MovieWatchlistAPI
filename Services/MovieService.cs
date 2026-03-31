@@ -30,20 +30,15 @@ namespace MovieWatchlistAPI.Services
 
         public async Task<WatchlistResponseDto> AddMovieToWatchlistAsync(AddMovieRequestDto request)
         {
-            // 1. Check if the movie already exists in our database to avoid duplicates
+            // 1. Check if the movie already exists in our database
             var existingMovie = await _appDbContext.WatchlistMovies
                 .FirstOrDefaultAsync(m => m.ImdbId == request.ImdbId);
 
             if (existingMovie != null)
             {
-                // If it exists, we just return the existing data mapped to our DTO
-                return new WatchlistResponseDto(
-                    existingMovie.ImdbId,
-                    existingMovie.Title,
-                    existingMovie.Year,
-                    existingMovie.AiPitch,
-                    existingMovie.IsWatched
-                );
+                // Throwing an exception to inform the user that the movie is already present
+                // This will be caught by the try-catch block in the Controller
+                throw new InvalidOperationException($"The movie '{existingMovie.Title}' is already in your watchlist.");
             }
 
             // 2. Fetch full movie details from OMDb using the ImdbId
@@ -58,13 +53,14 @@ namespace MovieWatchlistAPI.Services
             }
 
             // Generate AI pitch using the IAiService
+            // We use the null-coalescing operator (??) to handle potential null plots
             var aiPitch = await _aiService.GenerateMoviePitchAsync(
-                             omdbResponse.Title,
-                             omdbResponse.Plot ?? "No plot available"
-                          );
+                                omdbResponse.Title,
+                                omdbResponse.Plot ?? "No plot available"
+                            );
 
             // 3. Create the Database Entity
-            // Note: We convert Year from string to int here
+            // We safely parse the year, taking only the first 4 characters to handle date ranges (e.g., "2019–2023")
             var movieEntity = new WatchlistMovie
             {
                 ImdbId = omdbResponse.imdbID,

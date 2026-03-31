@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using MovieWatchlistAPI.Dtos;
 using MovieWatchlistAPI.Services.Interfaces;
 
@@ -30,19 +31,39 @@ namespace MovieWatchlistAPI.Controllers
         }
 
         // POST: api/movies
-        // Adds a new movie to the watchlist using an IMDb ID
+        // Adds a new movie to the watchlist based on the provided IMDb ID
         [HttpPost]
-        public async Task<IActionResult> AddMovie([FromBody] AddMovieRequestDto request)
+        public async Task<IActionResult> AddMovie(
+            [FromBody] AddMovieRequestDto request, // The request body containing the IMDb ID
+            [FromServices] IValidator<AddMovieRequestDto> validator) // Injecting the FluentValidation validator for AddMovieRequestDto
         {
+            // 1. Syntax/Format validation (FluentValidation)
+            var validationResult = await validator.ValidateAsync(request);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(new
+                {
+                    errors = validationResult.Errors.Select(e => new { e.PropertyName, e.ErrorMessage })
+                });
+            }
+
             try
             {
                 var result = await movieService.AddMovieToWatchlistAsync(request);
                 return Ok(result);
-                // Tip: In a production app, we'd use CreatedAtAction here
             }
+            // 2. Business Logic validation (Captured from Service)
+            catch (InvalidOperationException ex)
+            {
+                // This specifically handles the "Movie already exists" scenario
+                return BadRequest(new { message = ex.Message });
+            }
+            // 3. Technical/Unexpected errors
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                // For unexpected errors, it's cleaner to return a 500 or a generic message
+                return StatusCode(500, new { message = "An internal error occurred.", details = ex.Message });
             }
         }
 
